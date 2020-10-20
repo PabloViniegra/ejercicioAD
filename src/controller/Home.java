@@ -28,7 +28,6 @@ public class Home {
             sc.nextLine();
             switch (opcion) {
                 case 1:
-                    rugby = new Rugby();
                     rugby = view.requestData(sc);
                     writeInFile(rugby, file);
                     readInFile(file);
@@ -49,7 +48,7 @@ public class Home {
         } while (opcion != 0);
 
     }
-
+    //Escribe líneas en el fichero, con el objeto Rugby
     public static void writeInFile(Rugby r, File file) throws IOException {
         if (!file.exists()) {
             file.createNewFile();
@@ -65,7 +64,7 @@ public class Home {
             e.printStackTrace();
         }
     }
-
+    //Lee el fichero rugby.csv y muestra todas las líneas
     public static void readInFile(File file) {
 
         try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
@@ -74,13 +73,11 @@ public class Home {
                 String[] tokens = line.split(";");
                 System.out.println(tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + tokens[3] + " " + tokens[4] + " " + tokens[5] + " " + tokens[6]);
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
+    //Muestra aquellos estadios que tienen más capacidad de la media
     public static void showCapacityOverAverage(File file) {
         float average = 0;
         try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
@@ -107,7 +104,7 @@ public class Home {
             e.printStackTrace();
         }
     }
-
+    //Llena el array de Países
     public static void fillCountries(File file, ArrayList<Country> countries) {
 
         try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
@@ -150,7 +147,7 @@ public class Home {
             e.printStackTrace();
         }
     }
-
+    //Compara una lista de paises y saca el páis con más puntos
     public static void showCountryWithMorePoints(File file) {
         ArrayList<Country> countries = new ArrayList<>();
         fillCountries(file, countries);
@@ -163,6 +160,7 @@ public class Home {
         System.out.println("El ganador es " + countryWinner.getCountry() + " con " + countryWinner.getPoints());
     }
 
+    //retorna la media de un array
     public static float getAverage(ArrayList<Integer> array) {
         int totalNum = 0;
         for (Integer integer : array) {
@@ -170,7 +168,7 @@ public class Home {
         }
         return (float) (totalNum / array.size());
     }
-
+    //Compara una lista de paises y saca el páis con menos puntos
     public static void showCountryWithLessPoints(File file) {
         ArrayList<Country> countries = new ArrayList<>();
         fillCountries(file, countries);

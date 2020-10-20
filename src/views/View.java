@@ -11,6 +11,7 @@ public class View {
         System.out.println("2. Mostrar estadios por encima de la media");
         System.out.println("3. Mostrar el país que más tantos ha marcado");
         System.out.println("4. Mostrar el país que menos tantos ha marcado");
+        System.out.println("5. Mostrar país que más tantos ha recibido");
     }
 
     public Rugby requestData (Scanner s) {

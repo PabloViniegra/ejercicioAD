@@ -14,7 +14,7 @@ public class Home {
      * de 6 naciones e Rugby. 1º Leer en un archivo CSV los datos separandolos por punto y coma
      * 2º Mostrar el nombre de los estadios que tienen una capacidad superior a la media. 3º
      * Mostrar el país que más tantos ha marcado. 4º Mostrar el país que menos tantos ha marcado.5º Incluir
-     * menú con opciones*/
+     * menú con opciones5 Mostrar el equipo que más tantos ha recibido*/
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
         View view = new View();
@@ -40,6 +40,9 @@ public class Home {
                     break;
                 case 4:
                     showCountryWithLessPoints(file);
+                    break;
+                case 5:
+                    showCountryWithMorePointsAgainst(file);
                     break;
                 default:
                     System.out.println("Dato erróneo");
@@ -179,5 +182,59 @@ public class Home {
             }
         }
         System.out.println("El ganador es " + countryWinner.getCountry() + " con " + countryWinner.getPoints());
+    }
+
+    public static void fillCountriesNegative (File file, ArrayList<Country> countries) {
+        try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = bf.readLine()) != null) {
+                String[] tokens = line.split(";");
+                Country countryLocal = new Country();
+                countryLocal.setCountry(tokens[3]);
+                Country countryVisitant = new Country();
+                countryVisitant.setCountry(tokens[4]);
+                if (countries.isEmpty()) {
+                    countryLocal.setPoints(Integer.parseInt(tokens[6]));
+                    countries.add(countryLocal);
+                    countryVisitant.setPoints(Integer.parseInt(tokens[5]));
+                    countries.add(countryVisitant);
+                } else {
+                    boolean foundLocal = false;
+                    boolean foundVisitant = false;
+                    for (Country country : countries) {
+                        if (country.getCountry().equalsIgnoreCase(tokens[3])) {
+                            country.setPoints(country.getPoints() + Integer.parseInt(tokens[6]));
+                            foundLocal = true;
+                        }
+                        if (country.getCountry().equalsIgnoreCase(tokens[4])) {
+                            country.setPoints(country.getPoints() + Integer.parseInt(tokens[5]));
+                            foundVisitant = true;
+                        }
+                    }
+                    if (!foundLocal) {
+                        countryLocal.setPoints(Integer.parseInt(tokens[6]));
+                        countries.add(countryLocal);
+                    }
+                    if (!foundVisitant) {
+                        countryVisitant.setPoints(Integer.parseInt(tokens[5]));
+                        countries.add(countryVisitant);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void showCountryWithMorePointsAgainst (File file) {
+        ArrayList<Country> countries = new ArrayList<>();
+        fillCountriesNegative(file, countries);
+        Country countryLoser = new Country();
+        for (Country country : countries) {
+            if (country.getPoints() > countryLoser.getPoints()) {
+                countryLoser = country;
+            }
+        }
+        System.out.println("El país con más puntos en contra es " + countryLoser.getCountry() + " con " + countryLoser.getPoints());
     }
 }

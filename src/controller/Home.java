@@ -1,9 +1,11 @@
 package controller;
 
+import models.Country;
 import models.Rugby;
 import views.View;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Home {
@@ -80,80 +82,104 @@ public class Home {
     }
 
     public static void showCapacityOverAverage(File file) {
+        float average = 0;
         try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
             String line;
-            int contador = 0;
-            int lineas = 1;
-            String estadio = "";
+            ArrayList<Integer> capacidades = new ArrayList<>();
             while ((line = bf.readLine()) != null) {
                 String[] tokens = line.split(";");
-                contador += Integer.parseInt(tokens[1]);
-                lineas++;
-
+                capacidades.add(Integer.parseInt(tokens[1]));
             }
-            float average = contador / lineas;
-            String aux;
-            while ((aux = bf.readLine()) != null) {
-                String[] tokens = aux.split(";");
-                if (Float.parseFloat(tokens[1]) > average) {
+            average = getAverage(capacidades);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (BufferedReader bf2 = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = bf2.readLine()) != null) {
+                String[] tokens = line.split(";");
+                if (Float.parseFloat(tokens[1]) > average)
                     System.out.println(tokens[2]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void fillCountries(File file, ArrayList<Country> countries) {
+
+        try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = bf.readLine()) != null) {
+                String[] tokens = line.split(";");
+                Country countryLocal = new Country();
+                countryLocal.setCountry(tokens[3]);
+                Country countryVisitant = new Country();
+                countryVisitant.setCountry(tokens[4]);
+                if (countries.isEmpty()) {
+                    countryLocal.setPoints(Integer.parseInt(tokens[5]));
+                    countries.add(countryLocal);
+                    countryVisitant.setPoints(Integer.parseInt(tokens[6]));
+                    countries.add(countryVisitant);
+                } else {
+                    boolean foundLocal = false;
+                    boolean foundVisitant = false;
+                    for (Country country : countries) {
+                        if (country.getCountry().equalsIgnoreCase(tokens[3])) {
+                            country.setPoints(country.getPoints() + Integer.parseInt(tokens[5]));
+                            foundLocal = true;
+                        }
+                        if (country.getCountry().equalsIgnoreCase(tokens[4])) {
+                            country.setPoints(country.getPoints() + Integer.parseInt(tokens[6]));
+                            foundVisitant = true;
+                        }
+                    }
+                    if (!foundLocal) {
+                        countryLocal.setPoints(Integer.parseInt(tokens[5]));
+                        countries.add(countryLocal);
+                    }
+                    if (!foundVisitant) {
+                        countryVisitant.setPoints(Integer.parseInt(tokens[6]));
+                        countries.add(countryVisitant);
+                    }
                 }
             }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static void showCountryWithMorePoints(File file) {
-
-        try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
-            int totalLocalPoints = 0, totalVisitantPoints = 0;
-            String line;
-            String country = "";
-            while ((line = bf.readLine()) != null) {
-                String[] tokens = line.split(";");
-                if (Float.parseFloat(tokens[5]) > totalLocalPoints) {
-                    totalLocalPoints += Integer.parseInt(tokens[5]);
-                    country = tokens[5];
-                }
-                if (Float.parseFloat(tokens[6]) > totalVisitantPoints) {
-                    totalVisitantPoints += Integer.parseInt(tokens[6]);
-                    country = tokens[6];
-                }
+        ArrayList<Country> countries = new ArrayList<>();
+        fillCountries(file, countries);
+        Country countryWinner = new Country();
+        for (Country country : countries) {
+            if (country.getPoints() > countryWinner.getPoints()) {
+                countryWinner = country;
             }
-            System.out.println("El pais con más puntos es: " + country);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        System.out.println("El ganador es " + countryWinner.getCountry() + " con " + countryWinner.getPoints());
+    }
+
+    public static float getAverage(ArrayList<Integer> array) {
+        int totalNum = 0;
+        for (Integer integer : array) {
+            totalNum += integer;
+        }
+        return (float) (totalNum / array.size());
     }
 
     public static void showCountryWithLessPoints(File file) {
-        try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
-            int totalLocalPoints = 0, totalVisitantPoints = 0;
-            String line;
-            String country = "";
-            while ((line = bf.readLine()) != null) {
-                String[] tokens = line.split(";");
-                if (Integer.parseInt(tokens[5]) < totalLocalPoints) {
-                    totalLocalPoints += Integer.parseInt(tokens[5]);
-                    country = tokens[5];
-                }
-                if (Integer.parseInt(tokens[6]) < totalVisitantPoints) {
-                    totalVisitantPoints += Integer.parseInt(tokens[6]);
-                    country = tokens[6];
-                }
+        ArrayList<Country> countries = new ArrayList<>();
+        fillCountries(file, countries);
+        Country countryWinner = new Country();
+        for (Country country : countries) {
+            if (country.getPoints() < countryWinner.getPoints() || countryWinner.getPoints() == 0) {
+                countryWinner = country;
             }
-            System.out.println("El pais con menos puntos es: " + country);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        System.out.println("El ganador es " + countryWinner.getCountry() + " con " + countryWinner.getPoints());
     }
-
 }

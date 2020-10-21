@@ -124,43 +124,62 @@ public class Home {
 
         try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
             String line;
+            int localPoints;
+            int visitantPoints;
             while ((line = bf.readLine()) != null) {
                 String[] tokens = line.split(";");
                 Country countryLocal = new Country();
                 countryLocal.setCountry(tokens[3]);
                 Country countryVisitant = new Country();
                 countryVisitant.setCountry(tokens[4]);
+                if (Integer.parseInt(tokens[5]) > Integer.parseInt(tokens[6])) {
+                    localPoints = 3;
+                    visitantPoints = 0;
+                } else if (Integer.parseInt(tokens[5]) < Integer.parseInt(tokens[6])) {
+                    localPoints = 0;
+                    visitantPoints = 3;
+                } else {
+                    localPoints = 1;
+                    visitantPoints = 1;
+                }
                 if (countries.isEmpty()) {
-                    countryLocal.setPoints(Integer.parseInt(tokens[5]));
-                    countries.add(countryLocal);
-                    countryVisitant.setPoints(Integer.parseInt(tokens[6]));
-                    countries.add(countryVisitant);
+                    createCountry(countries, localPoints, tokens, countryLocal, 5, 6);
+                    createCountry(countries, visitantPoints, tokens, countryVisitant, 6, 5);
                 } else {
                     boolean foundLocal = false;
                     boolean foundVisitant = false;
                     for (Country country : countries) {
                         if (country.getCountry().equalsIgnoreCase(tokens[3])) {
                             country.setPoints(country.getPoints() + Integer.parseInt(tokens[5]));
+                            country.setTotalPoints(country.getTotalPoints() + localPoints);
+                            country.setDifference(country.getDifference() + (Integer.parseInt(tokens[5]) - Integer.parseInt(tokens[6])));
                             foundLocal = true;
                         }
                         if (country.getCountry().equalsIgnoreCase(tokens[4])) {
                             country.setPoints(country.getPoints() + Integer.parseInt(tokens[6]));
+                            country.setTotalPoints(country.getTotalPoints() + visitantPoints);
+                            country.setDifference(country.getDifference() + (Integer.parseInt(tokens[6]) - Integer.parseInt(tokens[5])));
                             foundVisitant = true;
                         }
                     }
                     if (!foundLocal) {
-                        countryLocal.setPoints(Integer.parseInt(tokens[5]));
-                        countries.add(countryLocal);
+                        createCountry(countries, localPoints, tokens, countryLocal, 5, 6);
                     }
                     if (!foundVisitant) {
-                        countryVisitant.setPoints(Integer.parseInt(tokens[6]));
-                        countries.add(countryVisitant);
+                        createCountry(countries, visitantPoints, tokens, countryVisitant, 6, 5);
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void createCountry(ArrayList<Country> countries, int localPoints, String[] tokens, Country countryLocal, int i, int i2) {
+        countryLocal.setPoints(Integer.parseInt(tokens[i]));
+        countryLocal.setTotalPoints(localPoints);
+        countryLocal.setDifference(Integer.parseInt(tokens[i]) - Integer.parseInt(tokens[i2]));
+        countries.add(countryLocal);
     }
 
     //Compara una lista de paises y saca el páis con más puntos
@@ -178,31 +197,30 @@ public class Home {
 
     public static void classificationBuild(File file) {
 
-        ArrayList <Country> countries = new ArrayList<>();
+        ArrayList<Country> countries = new ArrayList<>();
         fillCountries(file, countries);
-        try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = bf.readLine()) != null) {
-                String[] tokens = line.split(";");
-                for (Country country : countries) {
-                    if (country.getCountry().equalsIgnoreCase(tokens[3]) || country.getCountry().equalsIgnoreCase(tokens[4])) {
-                        if (country.getPoints() > Integer.parseInt(tokens[5]) || country.getPoints() > Integer.parseInt(tokens[6])) {
-                            country.setTotalPoints(+3);
-                        } else if (country.getPoints() == Integer.parseInt(tokens[5]) || country.getPoints() == Integer.parseInt(tokens[6])) {
-                            country.setTotalPoints(+1);
-                        }
-                        country.setDifference(Integer.parseInt(tokens[5]) - Integer.parseInt(tokens[6]));
-                    }
+        System.out.println("EQUIPO       PUNTOS      TOTAL AVERAGE");
+        orderCountries(countries);
+        for (Country country : countries) {
+            System.out.println(country.getCountry() + "   " + country.getTotalPoints() + "   " + country.getDifference());
+        }
+
+    }
+
+    private static void orderCountries(ArrayList<Country> countries) {
+        countries.sort((o1, o2) -> {
+            if (o1.getTotalPoints() > o2.getTotalPoints()) {
+                return -1;
+            } else if (o1.getTotalPoints() < o2.getTotalPoints()) {
+                return 1;
+            } else {
+                if (o1.getDifference() > o2.getDifference()) {
+                    return -1;
+                } else {
+                    return 0;
                 }
             }
-
-            System.out.println("EQUIPO       PUNTOS      TOTAL AVERAGE");
-            for (Country country : countries) {
-                System.out.println(country.getCountry() + "   " + country.getTotalPoints() + "   " + country.getDifference());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     public static void showInformation(File file) {

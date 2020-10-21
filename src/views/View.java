@@ -12,6 +12,8 @@ public class View {
         System.out.println("3. Mostrar el país que más tantos ha marcado");
         System.out.println("4. Mostrar el país que menos tantos ha marcado");
         System.out.println("5. Mostrar país que más tantos ha recibido");
+        System.out.println("6. Mostrar información");
+        System.out.println("7. Mostrar clasificación");
     }
 
     public Rugby requestData (Scanner s) {

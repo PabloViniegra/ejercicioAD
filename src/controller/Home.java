@@ -14,7 +14,9 @@ public class Home {
      * de 6 naciones e Rugby. 1º Leer en un archivo CSV los datos separandolos por punto y coma
      * 2º Mostrar el nombre de los estadios que tienen una capacidad superior a la media. 3º
      * Mostrar el país que más tantos ha marcado. 4º Mostrar el país que menos tantos ha marcado.5º Incluir
-     * menú con opciones5 Mostrar el equipo que más tantos ha recibido*/
+     * menú con opciones5 Mostrar el equipo que más tantos ha recibido. 6 presentar en pantalla el fichero. 7 Sacar la clasificación de los equipos
+     * dando 3 puntos por ganar, 1 por empatar y 0 por perder. En caso de empate a puntos saldrá primero el que tenga la mejor diferencia de tantos(tantos totales marcados - tantos totales encajados).
+     * Tres columnas equipos, puntos y diferencia de goles en contra */
     public static void main(String[] args) throws IOException {
         Scanner sc = new Scanner(System.in);
         View view = new View();
@@ -44,6 +46,12 @@ public class Home {
                 case 5:
                     showCountryWithMorePointsAgainst(file);
                     break;
+                case 6:
+                    showInformation(file);
+                    break;
+                case 7:
+                    classificationBuild(file);
+                    break;
                 default:
                     System.out.println("Dato erróneo");
                     break;
@@ -51,6 +59,7 @@ public class Home {
         } while (opcion != 0);
 
     }
+
     //Escribe líneas en el fichero, con el objeto Rugby
     public static void writeInFile(Rugby r, File file) throws IOException {
         if (!file.exists()) {
@@ -67,6 +76,7 @@ public class Home {
             e.printStackTrace();
         }
     }
+
     //Lee el fichero rugby.csv y muestra todas las líneas
     public static void readInFile(File file) {
 
@@ -80,6 +90,7 @@ public class Home {
             e.printStackTrace();
         }
     }
+
     //Muestra aquellos estadios que tienen más capacidad de la media
     public static void showCapacityOverAverage(File file) {
         float average = 0;
@@ -107,6 +118,7 @@ public class Home {
             e.printStackTrace();
         }
     }
+
     //Llena el array de Países
     public static void fillCountries(File file, ArrayList<Country> countries) {
 
@@ -150,6 +162,7 @@ public class Home {
             e.printStackTrace();
         }
     }
+
     //Compara una lista de paises y saca el páis con más puntos
     public static void showCountryWithMorePoints(File file) {
         ArrayList<Country> countries = new ArrayList<>();
@@ -163,6 +176,60 @@ public class Home {
         System.out.println("El ganador es " + countryWinner.getCountry() + " con " + countryWinner.getPoints());
     }
 
+    public static void classificationBuild(File file) {
+
+        ArrayList <Country> countries = new ArrayList<>();
+        fillCountries(file, countries);
+        try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = bf.readLine()) != null) {
+                String[] tokens = line.split(";");
+                for (Country country : countries) {
+                    if (country.getCountry().equalsIgnoreCase(tokens[3]) || country.getCountry().equalsIgnoreCase(tokens[4])) {
+                        if (country.getPoints() > Integer.parseInt(tokens[5]) || country.getPoints() > Integer.parseInt(tokens[6])) {
+                            country.setTotalPoints(+3);
+                        } else if (country.getPoints() == Integer.parseInt(tokens[5]) || country.getPoints() == Integer.parseInt(tokens[6])) {
+                            country.setTotalPoints(+1);
+                        }
+                        country.setDifference(Integer.parseInt(tokens[5]) - Integer.parseInt(tokens[6]));
+                    }
+                }
+            }
+
+            System.out.println("EQUIPO       PUNTOS      TOTAL AVERAGE");
+            for (Country country : countries) {
+                System.out.println(country.getCountry() + "   " + country.getTotalPoints() + "   " + country.getDifference());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void showInformation(File file) {
+        try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
+            String line;
+            System.out.println("FECHA        LOCAL       VISITANTE");
+            while ((line = bf.readLine()) != null) {
+                String[] tokens = line.split(";");
+                if (tokens[5].equalsIgnoreCase("X")) {
+                    System.out.println(transformDateString(tokens[0]) + "   " + tokens[3] + "-" + tokens[5] + "   " + "APLAZADO");
+                } else {
+                    System.out.println(transformDateString(tokens[0]) + "   " + tokens[3] + "-" + tokens[5] + "   " + tokens[4] + "-" + tokens[6]);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String transformDateString(String s) {
+        String[] parts = s.split("-");
+        String day = parts[2];
+        String month = parts[1];
+        String year = parts[0];
+        return (day.concat("/").concat(month).concat("/").concat(year));
+    }
+
     //retorna la media de un array
     public static float getAverage(ArrayList<Integer> array) {
         int totalNum = 0;
@@ -171,6 +238,7 @@ public class Home {
         }
         return (float) (totalNum / array.size());
     }
+
     //Compara una lista de paises y saca el páis con menos puntos
     public static void showCountryWithLessPoints(File file) {
         ArrayList<Country> countries = new ArrayList<>();
@@ -184,7 +252,7 @@ public class Home {
         System.out.println("El ganador es " + countryWinner.getCountry() + " con " + countryWinner.getPoints());
     }
 
-    public static void fillCountriesNegative (File file, ArrayList<Country> countries) {
+    public static void fillCountriesNegative(File file, ArrayList<Country> countries) {
         try (BufferedReader bf = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = bf.readLine()) != null) {
@@ -226,7 +294,7 @@ public class Home {
         }
     }
 
-    public static void showCountryWithMorePointsAgainst (File file) {
+    public static void showCountryWithMorePointsAgainst(File file) {
         ArrayList<Country> countries = new ArrayList<>();
         fillCountriesNegative(file, countries);
         Country countryLoser = new Country();
